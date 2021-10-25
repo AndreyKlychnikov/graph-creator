@@ -7187,11 +7187,6 @@ last-call-webpack-plugin@^3.0.0:
     lodash "^4.17.5"
     webpack-sources "^1.1.0"
 
-leaflet@1.0.0:
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/leaflet/-/leaflet-1.0.0.tgz#7778bdde12c760d611ee235ce9a77419653fc369"
-  integrity sha1-d3i93hLHYNYR7iNc6ad0GWU/w2k=
-
 leven@^3.1.0:
   version "3.1.0"
   resolved "https://registry.yarnpkg.com/leven/-/leven-3.1.0.tgz#77891de834064cccba82ae7842bb6b14a13ed7f2"
