@@ -3,8 +3,10 @@ import {GraphView} from "react-digraph";
 import React, {useRef, useState} from "react";
 
 import {
-  Grid,
-  Paper,
+  Button,
+  FormControl,
+  Grid, InputLabel, MenuItem,
+  Paper, Select,
   Table,
   TableBody,
   TableCell,
@@ -16,6 +18,7 @@ import {
 
 import "./Graph.css";
 import {default as nodeConfig} from "./config";
+import axios from "axios";
 
 const sample = {
   edges: [],
@@ -31,6 +34,9 @@ export default function Graph() {
   const [edges, setEdges] = useState(sample.edges);
   const [nextNodeId, setNextNodeId] = useState(1);
   const [selected, setSelected] = useState({nodes: null, edges: null});
+  const [dijkstraTarget, setDijkstraTarget] = useState("");
+  const [dijkstraSource, setDijkstraSource] = useState("");
+  const [dijkstraResult, setDijkstraResult] = useState("");
   // const inputEdgeRef = React.useRef();
   // const inputNodeRef = React.useRef();
 
@@ -39,6 +45,21 @@ export default function Graph() {
   const NodeTypes = GraphConfig.NodeTypes;
   const NodeSubtypes = GraphConfig.NodeSubtypes;
   const EdgeTypes = GraphConfig.EdgeTypes;
+
+  function sendDijkstra() {
+    axios.post('http://127.0.0.1:8000/dijkstra', {
+      source_vertex: +dijkstraSource,
+      target_vertex: +dijkstraTarget,
+      edges: edges.map(edge => ({
+        source: +edge.source,
+        target: +edge.target,
+        value: +edge.handleText
+      }))
+    }).then(function (response) {
+      setDijkstraResult(response.data.result)
+    })
+
+  }
 
   function onCreateEdge(src, tgt) {
     console.log("onCreateEdge")
@@ -221,46 +242,85 @@ export default function Graph() {
           </div>
         </Grid>
         <Grid item xs={5}>
-          <TableContainer component={Paper}>
-            <Table aria-label="custom pagination table">
-              <TableHead>
-                <TableRow>
-                  <TableCell>Source</TableCell>
-                  <TableCell>Target</TableCell>
-                  <TableCell>Value</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {(edges).map((edge) => (
-                  <TableRow key={`${edge.source}_${edge.target}`}>
-                    <TableCell>
-                      <TextField
-                        value={edge.source}
-                        variant="outlined"
-                        size="small"
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <TextField
-                        value={edge.target}
-                        variant="outlined"
-                        size="small"
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <TextField
-                        type={"number"}
-                        value={edge.handleText}
-                        variant="outlined"
-                        size="small"
-                        onChange={(e) => setEdgeValue(e.target.value, edge.source, edge.target)}
-                      />
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
+          <Grid container>
+            <Grid item>
+              <TableContainer component={Paper}>
+                <Table aria-label="custom pagination table">
+                  <TableHead>
+                    <TableRow>
+                      <TableCell>Source</TableCell>
+                      <TableCell>Target</TableCell>
+                      <TableCell>Value</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {(edges).map((edge) => (
+                        <TableRow key={`${edge.source}_${edge.target}`}>
+                          <TableCell>
+                            <TextField
+                                value={edge.source}
+                                variant="outlined"
+                                size="small"
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <TextField
+                                value={edge.target}
+                                variant="outlined"
+                                size="small"
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <TextField
+                                type={"number"}
+                                value={edge.handleText}
+                                variant="outlined"
+                                size="small"
+                                onChange={(e) => setEdgeValue(e.target.value, edge.source, edge.target)}
+                            />
+                          </TableCell>
+                        </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            </Grid>
+            <Grid item>
+              <FormControl fullWidth>
+                <InputLabel id="dijkstra_source">Select node</InputLabel>
+                <Select
+                    labelId="dijkstra_source"
+                    id="dijkstra_source_select"
+                    value={dijkstraSource}
+                    label="Target"
+                    onChange={e => setDijkstraSource(e.target.value)}
+                    variant="outlined"
+                >
+                  {nodes.map(node => (
+                      <MenuItem value={node.id}>{node.id}</MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+              <FormControl fullWidth>
+                <InputLabel id="dijkstra_target">Select node</InputLabel>
+                <Select
+                    labelId="dijkstra_target"
+                    id="dijkstra_target_select"
+                    value={dijkstraTarget}
+                    label="Target"
+                    onChange={e => setDijkstraTarget(e.target.value)}
+                    variant="outlined"
+                >
+                  {nodes.map(node => (
+                      <MenuItem value={node.id}>{node.id}</MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+              <Button onClick={sendDijkstra}>Dijkstra!</Button>
+              <TextField value={dijkstraResult}/>
+            </Grid>
+
+          </Grid>
         </Grid>
       </Grid>
     </div>
