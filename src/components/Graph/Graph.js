@@ -1,8 +1,18 @@
 import {GraphView} from "react-digraph";
 
-import React, {useEffect, useRef, useState} from "react";
+import React, {useRef, useState} from "react";
 
-import {Grid, TextField} from "@material-ui/core";
+import {
+  Grid,
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  TextField
+} from "@material-ui/core";
 
 import "./Graph.css";
 import {default as nodeConfig} from "./config";
@@ -19,65 +29,11 @@ export default function Graph() {
   // this is the initial value of the state
   const [nodes, setNodes] = useState(sample.nodes);
   const [edges, setEdges] = useState(sample.edges);
-  const [curNodeValue, setCurNodeValue] = useState('0');
-  const [curEdgeValue, setCurEdgeValue] = useState('0');
   const [nextNodeId, setNextNodeId] = useState(1);
-  const [curNode, setCurNode] = useState(null);
-  const [curEdge, setCurEdge] = useState(null);
   const [selected, setSelected] = useState({nodes: null, edges: null});
-  const inputEdgeRef = React.useRef();
-  const inputNodeRef = React.useRef();
+  // const inputEdgeRef = React.useRef();
+  // const inputNodeRef = React.useRef();
 
-  useEffect(() => {
-    if (selected.nodes) {
-      const node = selected.nodes.values().next();
-      setCurNode(node);
-      setCurEdge(null);
-    } else if (selected.edges) {
-      const edge = selected.edges.values().next();
-      setCurEdge(edge);
-      setCurNode(null);
-    } else {
-      setCurNode(null);
-      setCurEdge(null);
-    }
-  }, [selected])
-
-  useEffect(() => {
-    if (curEdge) {
-      setCurEdgeValue(curEdge.value.handleText ? curEdge.value.handleText: "0");
-      // inputEdgeRef.current.focus();
-    } else {
-      setCurEdgeValue("")
-    }
-  }, [curEdge])
-
-  useEffect(() => {
-    if (curNode) {
-      setCurNodeValue(curNode.value.title ? curNode.value.title: curNode.value.id);
-      // inputNodeRef.current.focus();
-    } else {
-      setCurNodeValue("")
-    }
-  }, [curNode])
-
-  useEffect(() => {
-    if (curEdge) {
-      const idx = edges.indexOf(curEdge.value);
-      let newEdges = [...edges];
-      newEdges[idx].handleText = "" + parseInt(curEdgeValue);
-      setEdges(newEdges);
-    }
-  }, [curEdgeValue])
-
-  useEffect(() => {
-    if (curNode) {
-      const idx = nodes.indexOf(curNode.value);
-      let newNodes = [...nodes];
-      newNodes[idx].title = curNodeValue;
-      setNodes(newNodes)
-    }
-  }, [curNodeValue])
   const myRef = useRef("someval?");
 
   const NodeTypes = GraphConfig.NodeTypes;
@@ -85,21 +41,23 @@ export default function Graph() {
   const EdgeTypes = GraphConfig.EdgeTypes;
 
   function onCreateEdge(src, tgt) {
+    console.log("onCreateEdge")
     const newEdge = {
       source: src.id,
       target: tgt.id,
       type: "specialEdge",
       handleText: "0"
     };
-
     setEdges((prev) => [...prev, newEdge]);
     let edges = new Map();
     edges.set(`${newEdge.source}_${newEdge.target}`, newEdge)
+    console.log("setSelected")
     setSelected({nodes: null, edges: edges})
-    inputEdgeRef.current.focus();
+    // inputEdgeRef.current.focus();
   }
 
   function onCreateNodeClick(x, y) {
+    console.log("onCreateNodeClick")
     const type = "poly";
     const title = "" + nextNodeId;
     const viewNode = {
@@ -114,9 +72,12 @@ export default function Graph() {
   }
 
   function onSelect(selected) {
+    console.log("onSelect")
     setSelected(selected);
+    console.log("onSelect2")
   }
   function onDeleteNode(viewNode) {
+    console.log("onDeleteNode")
     // Delete any connected edges
     const newEdges = edges.filter((edge) => {
       return edge.source !== viewNode.id && edge.target !== viewNode.id;
@@ -131,6 +92,7 @@ export default function Graph() {
   }
 
   function onSwapEdge(sourceViewNode, targetViewNode, viewEdge) {
+    console.log("onSwapEdge")
     const index = edges.findIndex(edge => edge.source === viewEdge.source && edge.target === viewEdge.target)
 
     const edge = {
@@ -144,6 +106,7 @@ export default function Graph() {
     setEdges(newEdges);
   }
   function onDeleteSelected(e) {
+    console.log("onDeleteSelected")
     if (e.nodes) {
       onDeleteNode(e.nodes.values().next().value)
     } else if (e.edges) {
@@ -151,6 +114,7 @@ export default function Graph() {
     }
   }
   function onDeleteEdge(edge) {
+    console.log("onDeleteEdge")
     const index = edges.indexOf(edge);
     if (index > -1) {
       let newEdges = [...edges]
@@ -158,7 +122,30 @@ export default function Graph() {
       setEdges(newEdges);
     }
   }
-
+  function setEdgeValue(value, source_id, target_id) {
+    console.log("setEdgeValue")
+    if (source_id === target_id) return;
+    let newEdges = []
+    const idx = edges.findIndex(value => value.source === source_id && value.target === target_id);
+    if (value === "") {
+      newEdges = [...edges]
+      newEdges.splice(idx, 1)
+    } else if (idx !== -1) {
+      newEdges = [...edges];
+      newEdges[idx].handleText = +value + "";
+    } else {
+      newEdges = [
+        ...edges,
+        {
+          handleText: value,
+          source: source_id,
+          target: target_id,
+          type: "specialType"
+        }
+      ];
+    }
+    setEdges(newEdges);
+  }
   return (
     <div
       id="graph"
@@ -170,45 +157,45 @@ export default function Graph() {
       }}
     >
       <Grid container direction="row">
-        <Grid item xs={2}>
-          <Grid container direction="column" spacing={1}>
-            {selected.nodes &&
-              <Grid item>
-                <TextField
-                  id="node_edit_val"
-                  label="Node name"
-                  variant="outlined"
-                  disabled={!selected.nodes}
-                  inputRef={inputNodeRef}
-                  value={curNodeValue}
-                  onChange={(e) => setCurNodeValue(e.target.value)}
-                />
-              </Grid>
-            }
-            {selected.edges &&
-              <Grid item>
-                <TextField
-                  id="edge_edit_val"
-                  label="Edge value"
-                  variant="outlined"
-                  type={"number"}
-                  disabled={!selected.edges}
-                  inputRef={inputEdgeRef}
-                  value={curEdgeValue}
-                  onChange={(e) => setCurEdgeValue(e.target.value)}
-                />
-              </Grid>
-            }
-            {!selected.nodes && !selected.edges &&
-              <p>Select edge or node for editing</p>
-            }
-          </Grid>
-        </Grid>
+        {/*<Grid item xs={2}>*/}
+        {/*  <Grid container direction="column" spacing={1}>*/}
+        {/*    {selected.nodes &&*/}
+        {/*      <Grid item>*/}
+        {/*        <TextField*/}
+        {/*          id="node_edit_val"*/}
+        {/*          label="Node name"*/}
+        {/*          variant="outlined"*/}
+        {/*          disabled={!selected.nodes}*/}
+        {/*          inputRef={inputNodeRef}*/}
+        {/*          value={selected.nodes.values().next().value.title}*/}
+        {/*          onChange={(e) => setCurNodeVal(e.target.value)}*/}
+        {/*        />*/}
+        {/*      </Grid>*/}
+        {/*    }*/}
+        {/*    {selected.edges &&*/}
+        {/*      <Grid item>*/}
+        {/*        <TextField*/}
+        {/*          id="edge_edit_val"*/}
+        {/*          label="Edge value"*/}
+        {/*          variant="outlined"*/}
+        {/*          type={"number"}*/}
+        {/*          disabled={!selected.edges}*/}
+        {/*          inputRef={inputEdgeRef}*/}
+        {/*          value={selected.edges.values().next().value.handleText}*/}
+        {/*          onChange={(e) => setCurEdgeVal(e.target.value)}*/}
+        {/*        />*/}
+        {/*      </Grid>*/}
+        {/*    }*/}
+        {/*    {!selected.nodes && !selected.edges &&*/}
+        {/*      <p>Select edge or node for editing</p>*/}
+        {/*    }*/}
+        {/*  </Grid>*/}
+        {/*</Grid>*/}
 
-        <Grid item xs={10}>
+        <Grid item xs={7}>
           <div
             style={{
-              height: "70vh",
+              height: "100vh",
               backgroundColor: "black"
             }}
           >
@@ -232,6 +219,48 @@ export default function Graph() {
               onSelect={(entity) => onSelect(entity)}
             />
           </div>
+        </Grid>
+        <Grid item xs={5}>
+          <TableContainer component={Paper}>
+            <Table aria-label="custom pagination table">
+              <TableHead>
+                <TableRow>
+                  <TableCell>Source</TableCell>
+                  <TableCell>Target</TableCell>
+                  <TableCell>Value</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {(edges).map((edge) => (
+                  <TableRow key={`${edge.source}_${edge.target}`}>
+                    <TableCell>
+                      <TextField
+                        value={edge.source}
+                        variant="outlined"
+                        size="small"
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <TextField
+                        value={edge.target}
+                        variant="outlined"
+                        size="small"
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <TextField
+                        type={"number"}
+                        value={edge.handleText}
+                        variant="outlined"
+                        size="small"
+                        onChange={(e) => setEdgeValue(e.target.value, edge.source, edge.target)}
+                      />
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
         </Grid>
       </Grid>
     </div>
