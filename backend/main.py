@@ -33,5 +33,5 @@ async def dijkstra(edges: Edges):
     graph = Graph(len(vertices))
     for edge in edges.edges:
         graph.add_edge(edge.source - 1, edge.target - 1, edge.value)
-    dists = graph.dijkstra(edges.source_vertex - 1)
-    return {'result': dists[edges.target_vertex - 1]}
+    dists, paths = graph.dijkstra(edges.source_vertex - 1)
+    return {'result': dists[edges.target_vertex - 1], 'paths': paths}

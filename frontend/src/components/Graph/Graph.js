@@ -67,7 +67,8 @@ export default function Graph() {
       source: src.id,
       target: tgt.id,
       type: "specialEdge",
-      handleText: "0"
+      handleText: "0",
+      currentColor: "red"
     };
     setEdges((prev) => [...prev, newEdge]);
     let edges = new Map();
@@ -242,7 +243,7 @@ export default function Graph() {
           </div>
         </Grid>
         <Grid item xs={5}>
-          <Grid container>
+          <Grid container direction={"column"}>
             <Grid item>
               <TableContainer component={Paper}>
                 <Table aria-label="custom pagination table">
@@ -261,6 +262,7 @@ export default function Graph() {
                                 value={edge.source}
                                 variant="outlined"
                                 size="small"
+                                disabled={true}
                             />
                           </TableCell>
                           <TableCell>
@@ -268,6 +270,7 @@ export default function Graph() {
                                 value={edge.target}
                                 variant="outlined"
                                 size="small"
+                                disabled={true}
                             />
                           </TableCell>
                           <TableCell>
@@ -316,10 +319,13 @@ export default function Graph() {
                   ))}
                 </Select>
               </FormControl>
-              <Button onClick={sendDijkstra}>Dijkstra!</Button>
-              <TextField value={dijkstraResult}/>
             </Grid>
-
+            <Grid item>
+              <Button onClick={sendDijkstra}>Dijkstra!</Button>
+            </Grid>
+            <Grid item>
+              <TextField value={dijkstraResult} variant={"outlined"} disabled={true}/>
+            </Grid>
           </Grid>
         </Grid>
       </Grid>

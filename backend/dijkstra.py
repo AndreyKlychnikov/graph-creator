@@ -6,6 +6,7 @@ class Graph:
         self.v = num_of_vertices
         self.edges = [[-1 for i in range(num_of_vertices)] for j in range(num_of_vertices)]
         self.visited = []
+        self.paths = [list() for _ in range(self.v)]
 
     def add_edge(self, u, v, weight):
         self.edges[u][v] = weight
@@ -30,4 +31,16 @@ class Graph:
                         if new_cost < old_cost:
                             pq.put((new_cost, neighbor))
                             D[neighbor] = new_cost
-        return D
+                            self.paths[neighbor] = list(self.paths[current_vertex])
+                            self.paths[neighbor].append(current_vertex)
+        return D, self.paths
+
+
+if __name__ == '__main__':
+    graph = Graph(4)
+    graph.add_edge(0, 1, 1)
+    graph.add_edge(0, 2, 2)
+    graph.add_edge(0, 3, 3)
+    graph.add_edge(1, 3, 1)
+    print(graph.dijkstra(0))
+    print(graph.paths)

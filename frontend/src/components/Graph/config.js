@@ -31,6 +31,12 @@ const EmptyEdgeShape = (
   </symbol>
 );
 
+const RedEmptyEdgeShape = (
+    <symbol viewBox="0 0 50 50" id="emptyEdge">
+      <circle cx="25" cy="25" r="17" fill="red" />
+    </symbol>
+);
+
 
 export default {
   EdgeTypes: {
