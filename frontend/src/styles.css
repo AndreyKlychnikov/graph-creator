@@ -2,3 +2,22 @@
     font-family: sans-serif;
     text-align: center;
 }
+
+.redEdge {
+    stroke: red !important;
+    fill: white;
+}
+
+.redEdge .edge-text {
+    fill: red !important;
+    stroke: red !important;
+}
+
+.selected.redEdge .edge-text {
+    fill: white !important;
+    stroke: white !important;
+}
+
+.selected.redEdge {
+    fill: red !important;
+}

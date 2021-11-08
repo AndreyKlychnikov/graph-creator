@@ -17,7 +17,7 @@ import {
 } from "@material-ui/core";
 
 import "./Graph.css";
-import {default as nodeConfig} from "./config";
+import {default as nodeConfig, EMPTY_EDGE_TYPE, RED_EMPTY_EDGE_TYPE} from "./config";
 import axios from "axios";
 
 const sample = {
@@ -57,15 +57,16 @@ export default function Graph() {
   )
   function sendDijkstra() {
     axios.post('http://127.0.0.1:8000/dijkstra', {
-      source_vertex: +dijkstraSource,
-      target_vertex: +dijkstraTarget,
+      source_vertex: dijkstraSource,
+      target_vertex: dijkstraTarget,
       edges: edges.map(edge => ({
-        source: +edge.source,
-        target: +edge.target,
+        source: edge.source,
+        target: edge.target,
         value: +edge.handleText
       }))
     }).then(function (response) {
       setDijkstraResult(response.data.result)
+      highlightPath(response.data.path)
     })
 
   }
@@ -75,9 +76,8 @@ export default function Graph() {
     const newEdge = {
       source: src.id,
       target: tgt.id,
-      type: "specialEdge",
+      type: EMPTY_EDGE_TYPE,
       handleText: "0",
-      currentColor: "red"
     };
     setEdges((prev) => [...prev, newEdge]);
     let edges = new Map();
@@ -170,11 +170,35 @@ export default function Graph() {
           handleText: value,
           source: source_id,
           target: target_id,
-          type: "specialType"
+          type: EMPTY_EDGE_TYPE
         }
       ];
     }
     setEdges(newEdges);
+  }
+
+  function highlightPath(path) {
+    const newEdges = edges.map(edge => {
+      if (path.find(pathEdge => pathEdge.source === edge.source && pathEdge.target === edge.target)) {
+        return {
+          ...edge,
+          type: RED_EMPTY_EDGE_TYPE
+        }
+      }
+      return {
+        ...edge,
+        type: EMPTY_EDGE_TYPE
+      }
+    })
+    setEdges(newEdges)
+  }
+
+  function removeHighlight() {
+    const newEdges = edges.map(edge => ({
+      ...edge,
+      type: EMPTY_EDGE_TYPE
+    }))
+    setEdges(newEdges)
   }
   return (
     <div
