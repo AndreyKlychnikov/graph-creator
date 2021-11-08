@@ -36,9 +36,16 @@ async def dijkstra(edges: Edges):
         vertex_ids_map[vertex] = i
     for edge in edges.edges:
         graph.add_edge(vertex_ids_map[edge.source], vertex_ids_map[edge.target], edge.value)
-    dists, paths = graph.dijkstra(edges.source_vertex - 1)
+    dists, paths = graph.dijkstra(vertex_ids_map[edges.source_vertex])
     vertex_ids_map_rev = {v: k for k, v in vertex_ids_map.items()}
-    out_paths = {}
-    for dest_id, path in enumerate(paths):
-        out_paths[vertex_ids_map_rev[dest_id]] = [vertex_ids_map_rev[node_id] for node_id in path]
-    return {'result': dists[vertex_ids_map[edges.target_vertex]], 'paths': out_paths}
+
+    path = paths[vertex_ids_map[edges.target_vertex]]
+
+    path.append(vertex_ids_map[edges.target_vertex])
+    out_path = []
+    for i in range(1, len(path)):
+        out_path.append({
+            "source": vertex_ids_map_rev[path[i - 1]],
+            "target": vertex_ids_map_rev[path[i]],
+        })
+    return {'result': dists[vertex_ids_map[edges.target_vertex]], 'path': out_path}

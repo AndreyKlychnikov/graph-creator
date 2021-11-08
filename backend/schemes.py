@@ -4,12 +4,12 @@ from pydantic import BaseModel
 
 
 class Edge(BaseModel):
-    source: int
-    target: int
+    source: str
+    target: str
     value: int
 
 
 class Edges(BaseModel):
-    source_vertex: int
-    target_vertex: int
+    source_vertex: str
+    target_vertex: str
     edges: List[Edge]
