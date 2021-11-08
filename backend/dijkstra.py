@@ -1,4 +1,5 @@
 from queue import PriorityQueue
+from typing import Tuple, List
 
 
 class Graph:
@@ -11,7 +12,7 @@ class Graph:
     def add_edge(self, u, v, weight):
         self.edges[u][v] = weight
 
-    def dijkstra(self, start_vertex):
+    def dijkstra(self, start_vertex) -> Tuple[dict, List[List[int]]]:
         D = {v: float('inf') for v in range(self.v)}
         D[start_vertex] = 0
 
