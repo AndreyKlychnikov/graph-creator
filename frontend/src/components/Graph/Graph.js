@@ -1,6 +1,6 @@
 import {GraphView} from "react-digraph";
 
-import React, {useRef, useState} from "react";
+import React, {useEffect, useRef, useState} from "react";
 
 import {
   Button,
@@ -37,8 +37,8 @@ export default function Graph() {
   const [dijkstraTarget, setDijkstraTarget] = useState("");
   const [dijkstraSource, setDijkstraSource] = useState("");
   const [dijkstraResult, setDijkstraResult] = useState("");
-  // const inputEdgeRef = React.useRef();
-  // const inputNodeRef = React.useRef();
+  const [curEdge, setCurEdge] = useState(null)
+  const inputEdgeRef = React.useRef();
 
   const myRef = useRef("someval?");
 
@@ -46,6 +46,15 @@ export default function Graph() {
   const NodeSubtypes = GraphConfig.NodeSubtypes;
   const EdgeTypes = GraphConfig.EdgeTypes;
 
+  useEffect(() => {
+      if (selected.edges) setCurEdge(selected.edges.entries().next().value[1])
+    },
+    [selected]
+  )
+  useEffect(() => {
+      if (curEdge) inputEdgeRef.current.focus();
+    }, [curEdge]
+  )
   function sendDijkstra() {
     axios.post('http://127.0.0.1:8000/dijkstra', {
       source_vertex: +dijkstraSource,
@@ -75,7 +84,6 @@ export default function Graph() {
     edges.set(`${newEdge.source}_${newEdge.target}`, newEdge)
     console.log("setSelected")
     setSelected({nodes: null, edges: edges})
-    // inputEdgeRef.current.focus();
   }
 
   function onCreateNodeClick(x, y) {
@@ -179,41 +187,6 @@ export default function Graph() {
       }}
     >
       <Grid container direction="row">
-        {/*<Grid item xs={2}>*/}
-        {/*  <Grid container direction="column" spacing={1}>*/}
-        {/*    {selected.nodes &&*/}
-        {/*      <Grid item>*/}
-        {/*        <TextField*/}
-        {/*          id="node_edit_val"*/}
-        {/*          label="Node name"*/}
-        {/*          variant="outlined"*/}
-        {/*          disabled={!selected.nodes}*/}
-        {/*          inputRef={inputNodeRef}*/}
-        {/*          value={selected.nodes.values().next().value.title}*/}
-        {/*          onChange={(e) => setCurNodeVal(e.target.value)}*/}
-        {/*        />*/}
-        {/*      </Grid>*/}
-        {/*    }*/}
-        {/*    {selected.edges &&*/}
-        {/*      <Grid item>*/}
-        {/*        <TextField*/}
-        {/*          id="edge_edit_val"*/}
-        {/*          label="Edge value"*/}
-        {/*          variant="outlined"*/}
-        {/*          type={"number"}*/}
-        {/*          disabled={!selected.edges}*/}
-        {/*          inputRef={inputEdgeRef}*/}
-        {/*          value={selected.edges.values().next().value.handleText}*/}
-        {/*          onChange={(e) => setCurEdgeVal(e.target.value)}*/}
-        {/*        />*/}
-        {/*      </Grid>*/}
-        {/*    }*/}
-        {/*    {!selected.nodes && !selected.edges &&*/}
-        {/*      <p>Select edge or node for editing</p>*/}
-        {/*    }*/}
-        {/*  </Grid>*/}
-        {/*</Grid>*/}
-
         <Grid item xs={7}>
           <div
             style={{
@@ -273,15 +246,28 @@ export default function Graph() {
                                 disabled={true}
                             />
                           </TableCell>
-                          <TableCell>
-                            <TextField
+                          {curEdge && curEdge.source === edge.source && curEdge.target === edge.target ?
+                            <TableCell>
+                              <TextField
+                                inputRef={inputEdgeRef}
                                 type={"number"}
                                 value={edge.handleText}
                                 variant="outlined"
                                 size="small"
                                 onChange={(e) => setEdgeValue(e.target.value, edge.source, edge.target)}
-                            />
-                          </TableCell>
+                              />
+                            </TableCell>
+                            :
+                            <TableCell>
+                              <TextField
+                                type={"number"}
+                                value={edge.handleText}
+                                variant="outlined"
+                                size="small"
+                                onChange={(e) => setEdgeValue(e.target.value, edge.source, edge.target)}
+                              />
+                            </TableCell>
+                          }
                         </TableRow>
                     ))}
                   </TableBody>
