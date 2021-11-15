@@ -1,6 +1,7 @@
+import json
 from queue import PriorityQueue
 
-from fastapi import FastAPI
+from fastapi import FastAPI, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 
 from dijkstra import Graph
@@ -49,3 +50,9 @@ async def dijkstra(edges: Edges):
             "target": vertex_ids_map_rev[path[i]],
         })
     return {'result': dists[vertex_ids_map[edges.target_vertex]], 'path': out_path}
+
+
+@app.post("/graph-from-file/")
+async def graph_from_file(file: UploadFile = File(...)):
+    content = await file.read()
+    return json.loads(content)

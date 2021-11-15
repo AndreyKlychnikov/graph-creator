@@ -19,6 +19,7 @@ import {
 import "./Graph.css";
 import {default as nodeConfig, EMPTY_EDGE_TYPE, RED_EMPTY_EDGE_TYPE} from "./config";
 import axios from "axios";
+import copyTextToClipboard from '../../utils/clipboard'
 
 const sample = {
   edges: [],
@@ -37,7 +38,9 @@ export default function Graph() {
   const [dijkstraTarget, setDijkstraTarget] = useState("");
   const [dijkstraSource, setDijkstraSource] = useState("");
   const [dijkstraResult, setDijkstraResult] = useState("");
+  const [dijkstraPath, setDijkstraPath] = useState("");
   const [curEdge, setCurEdge] = useState(null)
+  const [graphFile, setGraphFile] = useState(null)
   const inputEdgeRef = React.useRef();
 
   const myRef = useRef("someval?");
@@ -66,11 +69,36 @@ export default function Graph() {
       }))
     }).then(function (response) {
       setDijkstraResult(response.data.result)
+      setDijkstraPath(pathToString(response.data.path))
       highlightPath(response.data.path)
     })
 
   }
-
+  function pathToString(path) {
+    let nodes = path.map(edge => edge.target)
+    nodes.unshift(path[0].source)
+    return nodes.join(' -> ')
+  }
+  function uploadGraph() {
+    if (!graphFile) return;
+    setNodes([]);
+    setEdges([])
+    const formData = new FormData();
+    formData.append("file", graphFile);
+    axios.post('http://127.0.0.1:8000/graph-from-file', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    }).then(function (response) {
+      const nodes = response.data.nodes
+      const edges = response.data.edges
+      setNodes(nodes ? nodes: []);
+      setEdges(edges ? edges: [])
+    })
+  }
+  function graphToJson() {
+    return JSON.stringify({edges, nodes})
+  }
   function onCreateEdge(src, tgt) {
     console.log("onCreateEdge")
     const newEdge = {
@@ -113,7 +141,7 @@ export default function Graph() {
       return edge.source !== viewNode.id && edge.target !== viewNode.id;
     });
 
-    var newNodes = nodes.filter((node) => {
+    const newNodes = nodes.filter((node) => {
       return node.id !== viewNode.id;
     });
 
@@ -298,43 +326,65 @@ export default function Graph() {
                 </Table>
               </TableContainer>
             </Grid>
-            <Grid item>
-              <FormControl fullWidth>
-                <InputLabel id="dijkstra_source">Select node</InputLabel>
-                <Select
-                    labelId="dijkstra_source"
-                    id="dijkstra_source_select"
-                    value={dijkstraSource}
-                    label="Target"
-                    onChange={e => setDijkstraSource(e.target.value)}
-                    variant="outlined"
-                >
-                  {nodes.map(node => (
-                      <MenuItem value={node.id}>{node.id}</MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-              <FormControl fullWidth>
-                <InputLabel id="dijkstra_target">Select node</InputLabel>
-                <Select
-                    labelId="dijkstra_target"
-                    id="dijkstra_target_select"
-                    value={dijkstraTarget}
-                    label="Target"
-                    onChange={e => setDijkstraTarget(e.target.value)}
-                    variant="outlined"
-                >
-                  {nodes.map(node => (
-                      <MenuItem value={node.id}>{node.id}</MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
+            <Grid item style={{marginTop: 10}} aria-orientation={"horizontal"}>
+              <Grid container>
+                <Grid item xs={6}>
+                  <FormControl style={{width: '100%'}}>
+                    <InputLabel id="dijkstra_source">Select node</InputLabel>
+                    <Select
+                      labelId="dijkstra_source"
+                      id="dijkstra_source_select"
+                      value={dijkstraSource}
+                      label="Target"
+                      onChange={e => setDijkstraSource(e.target.value)}
+                      variant="outlined"
+                    >
+                      {nodes.map(node => (
+                        <MenuItem value={node.id}>{node.id}</MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </Grid>
+                <Grid item xs={6}>
+                  <FormControl style={{width: '100%'}}>
+                    <InputLabel id="dijkstra_target">Select node</InputLabel>
+                    <Select
+                      labelId="dijkstra_target"
+                      id="dijkstra_target_select"
+                      value={dijkstraTarget}
+                      label="Target"
+                      onChange={e => setDijkstraTarget(e.target.value)}
+                      variant="outlined"
+                    >
+                      {nodes.map(node => (
+                        <MenuItem value={node.id}>{node.id}</MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </Grid>
+              </Grid>
+
             </Grid>
             <Grid item>
               <Button onClick={sendDijkstra}>Dijkstra!</Button>
             </Grid>
             <Grid item>
-              <TextField value={dijkstraResult} variant={"outlined"} disabled={true}/>
+              <Grid container>
+                <Grid item xs={6}>
+                  <TextField value={dijkstraResult} variant={"outlined"} disabled={true}/>
+                </Grid>
+                <Grid item xs={6}>
+                  <TextField value={dijkstraPath} variant={"outlined"} disabled={true}/>
+                </Grid>
+              </Grid>
+
+            </Grid>
+            <Grid item>
+              <TextField type={'file'} onChange={e => setGraphFile((e.target.files[0]))}/>
+              <Button onClick={uploadGraph}>Upload Graph</Button>
+            </Grid>
+            <Grid item>
+              <Button onClick={() => copyTextToClipboard(graphToJson())}>Copy graph to clipboard</Button>
             </Grid>
           </Grid>
         </Grid>

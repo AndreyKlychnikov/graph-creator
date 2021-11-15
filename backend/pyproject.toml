@@ -8,6 +8,7 @@ authors = ["Andrew Klyuchnikov <off-rey@bk.ru>"]
 python = "^3.8"
 fastapi = "^0.70.0"
 uvicorn = {extras = ["standart"], version = "^0.15.0"}
+python-multipart = "^0.0.5"
 
 [tool.poetry.dev-dependencies]
 
