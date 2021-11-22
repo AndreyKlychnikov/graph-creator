@@ -2,24 +2,22 @@ import {GraphView} from "react-digraph";
 
 import React, {useEffect, useRef, useState} from "react";
 
-import {
-  Button,
-  FormControl,
-  Grid, InputLabel, MenuItem,
-  Paper, Select,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  TextField
-} from "@material-ui/core";
-
 import "./Graph.css";
 import {default as nodeConfig, EMPTY_EDGE_TYPE, RED_EMPTY_EDGE_TYPE} from "./config";
 import axios from "axios";
 import copyTextToClipboard from '../../utils/clipboard'
+import {
+  Button,
+  FormControl,
+  Grid, InputLabel,
+  MenuItem, Paper, Select,
+  Table,
+  TableBody,
+  TableCell, TableContainer,
+  TableHead,
+  TableRow,
+  TextField
+} from "@mui/material";
 
 const sample = {
   edges: [],
@@ -40,7 +38,6 @@ export default function Graph() {
   const [dijkstraResult, setDijkstraResult] = useState("");
   const [dijkstraPath, setDijkstraPath] = useState("");
   const [curEdge, setCurEdge] = useState(null)
-  const [graphFile, setGraphFile] = useState(null)
   const inputEdgeRef = React.useRef();
 
   const myRef = useRef("someval?");
@@ -79,7 +76,7 @@ export default function Graph() {
     nodes.unshift(path[0].source)
     return nodes.join(' -> ')
   }
-  function uploadGraph() {
+  function uploadGraph(graphFile) {
     if (!graphFile) return;
     setNodes([]);
     setEdges([])
@@ -268,69 +265,12 @@ export default function Graph() {
           </div>
         </Grid>
         <Grid item xs={5}>
-          <Grid container direction={"column"}>
-            <Grid item>
-              <TableContainer component={Paper}>
-                <Table aria-label="custom pagination table">
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>Source</TableCell>
-                      <TableCell>Target</TableCell>
-                      <TableCell>Value</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {(edges).map((edge) => (
-                        <TableRow key={`${edge.source}_${edge.target}`}>
-                          <TableCell>
-                            <TextField
-                                value={edge.source}
-                                variant="outlined"
-                                size="small"
-                                disabled={true}
-                            />
-                          </TableCell>
-                          <TableCell>
-                            <TextField
-                                value={edge.target}
-                                variant="outlined"
-                                size="small"
-                                disabled={true}
-                            />
-                          </TableCell>
-                          {curEdge && curEdge.source === edge.source && curEdge.target === edge.target ?
-                            <TableCell>
-                              <TextField
-                                inputRef={inputEdgeRef}
-                                type={"number"}
-                                value={edge.handleText}
-                                variant="outlined"
-                                size="small"
-                                onChange={(e) => setEdgeValue(e.target.value, edge.source, edge.target)}
-                              />
-                            </TableCell>
-                            :
-                            <TableCell>
-                              <TextField
-                                type={"number"}
-                                value={edge.handleText}
-                                variant="outlined"
-                                size="small"
-                                onChange={(e) => setEdgeValue(e.target.value, edge.source, edge.target)}
-                              />
-                            </TableCell>
-                          }
-                        </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-            </Grid>
-            <Grid item style={{marginTop: 10}} aria-orientation={"horizontal"}>
-              <Grid container>
+          <Grid container direction={"column"} spacing={2} style={{padding: 10}}>
+            <Grid item aria-orientation={"horizontal"}>
+              <Grid container spacing={1}>
                 <Grid item xs={6}>
-                  <FormControl style={{width: '100%'}}>
-                    <InputLabel id="dijkstra_source">Select node</InputLabel>
+                  <FormControl fullWidth>
+                    <InputLabel id="dijkstra_source">Source</InputLabel>
                     <Select
                       labelId="dijkstra_source"
                       id="dijkstra_source_select"
@@ -340,14 +280,14 @@ export default function Graph() {
                       variant="outlined"
                     >
                       {nodes.map(node => (
-                        <MenuItem value={node.id}>{node.id}</MenuItem>
+                        <MenuItem key={node.id} value={node.id}>{node.id}</MenuItem>
                       ))}
                     </Select>
                   </FormControl>
                 </Grid>
                 <Grid item xs={6}>
-                  <FormControl style={{width: '100%'}}>
-                    <InputLabel id="dijkstra_target">Select node</InputLabel>
+                  <FormControl fullWidth>
+                    <InputLabel id="dijkstra_target">Target</InputLabel>
                     <Select
                       labelId="dijkstra_target"
                       id="dijkstra_target_select"
@@ -357,7 +297,7 @@ export default function Graph() {
                       variant="outlined"
                     >
                       {nodes.map(node => (
-                        <MenuItem value={node.id}>{node.id}</MenuItem>
+                        <MenuItem key={node.id} value={node.id}>{node.id}</MenuItem>
                       ))}
                     </Select>
                   </FormControl>
@@ -366,7 +306,7 @@ export default function Graph() {
 
             </Grid>
             <Grid item>
-              <Button onClick={sendDijkstra}>Dijkstra!</Button>
+              <Button variant="contained" onClick={sendDijkstra}>Dijkstra!</Button>
             </Grid>
             <Grid item>
               <Grid container>
@@ -380,12 +320,84 @@ export default function Graph() {
 
             </Grid>
             <Grid item>
-              <TextField type={'file'} onChange={e => setGraphFile((e.target.files[0]))}/>
-              <Button onClick={uploadGraph}>Upload Graph</Button>
+              <Grid container spacing={2}>
+                <Grid item>
+                  <Button
+                    variant="contained"
+                    component="label"
+                  >
+                    Upload File
+                    <input
+                      type="file"
+                      hidden
+                      onChange={e => uploadGraph((e.target.files[0]))}
+                    />
+                  </Button>
+                </Grid>
+                <Grid item>
+                  <Button variant="contained" onClick={() => copyTextToClipboard(graphToJson())}>Copy graph to clipboard</Button>
+                </Grid>
+              </Grid>
+
+
             </Grid>
-            <Grid item>
-              <Button onClick={() => copyTextToClipboard(graphToJson())}>Copy graph to clipboard</Button>
-            </Grid>
+          </Grid>
+          <Grid item>
+            <TableContainer component={Paper}>
+              <Table aria-label="custom pagination table" size="small">
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Source</TableCell>
+                    <TableCell>Target</TableCell>
+                    <TableCell>Value</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {(edges).map((edge) => (
+                    <TableRow key={`${edge.source}_${edge.target}`}>
+                      <TableCell>
+                        <TextField
+                          value={edge.source}
+                          variant="outlined"
+                          size="small"
+                          disabled={true}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <TextField
+                          value={edge.target}
+                          variant="outlined"
+                          size="small"
+                          disabled={true}
+                        />
+                      </TableCell>
+                      {curEdge && curEdge.source === edge.source && curEdge.target === edge.target ?
+                        <TableCell>
+                          <TextField
+                            inputRef={inputEdgeRef}
+                            type={"number"}
+                            value={edge.handleText}
+                            variant="outlined"
+                            size="small"
+                            onChange={(e) => setEdgeValue(e.target.value, edge.source, edge.target)}
+                          />
+                        </TableCell>
+                        :
+                        <TableCell>
+                          <TextField
+                            type={"number"}
+                            value={edge.handleText}
+                            variant="outlined"
+                            size="small"
+                            onChange={(e) => setEdgeValue(e.target.value, edge.source, edge.target)}
+                          />
+                        </TableCell>
+                      }
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
           </Grid>
         </Grid>
       </Grid>
