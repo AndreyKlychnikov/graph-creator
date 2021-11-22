@@ -5,12 +5,13 @@ export const NODE_KEY = "id";
 export const CUSTOM_EMPTY_TYPE = "customEmpty";
 export const POLY_TYPE = "poly";
 export const EMPTY_EDGE_TYPE = "emptyEdge";
+export const RED_EMPTY_EDGE_TYPE = "redEdge";
 
 export const nodeTypes = [
   CUSTOM_EMPTY_TYPE,
   POLY_TYPE,
 ];
-export const edgeTypes = [EMPTY_EDGE_TYPE];
+export const edgeTypes = [EMPTY_EDGE_TYPE, RED_EMPTY_EDGE_TYPE];
 
 
 const CustomEmptyShape = (
@@ -31,12 +32,23 @@ const EmptyEdgeShape = (
   </symbol>
 );
 
+const RedEmptyEdgeShape = (
+    <symbol viewBox="0 0 50 50" id="redEdge">
+      <circle cx="25" cy="25" r="17" />
+    </symbol>
+);
+
 
 export default {
   EdgeTypes: {
     emptyEdge: {
       shape: EmptyEdgeShape,
       shapeId: "#emptyEdge",
+      typeText: "Empty"
+    },
+    redEdge: {
+      shape: RedEmptyEdgeShape,
+      shapeId: "#redEdge",
       typeText: "Empty"
     }
   },
