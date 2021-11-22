@@ -7,6 +7,7 @@ import {default as nodeConfig, EMPTY_EDGE_TYPE, RED_EMPTY_EDGE_TYPE} from "./con
 import axios from "axios";
 import copyTextToClipboard from '../../utils/clipboard'
 import {
+  Accordion, AccordionDetails, AccordionSummary,
   Button,
   FormControl,
   Grid, InputLabel,
@@ -16,8 +17,9 @@ import {
   TableCell, TableContainer,
   TableHead,
   TableRow,
-  TextField
+  TextField, Typography
 } from "@mui/material";
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
 const sample = {
   edges: [],
@@ -265,82 +267,108 @@ export default function Graph() {
           </div>
         </Grid>
         <Grid item xs={5}>
-          <Grid container direction={"column"} spacing={2} style={{padding: 10}}>
-            <Grid item aria-orientation={"horizontal"}>
-              <Grid container spacing={1}>
-                <Grid item xs={6}>
-                  <FormControl fullWidth>
-                    <InputLabel id="dijkstra_source">Source</InputLabel>
-                    <Select
-                      labelId="dijkstra_source"
-                      id="dijkstra_source_select"
-                      value={dijkstraSource}
-                      label="Target"
-                      onChange={e => setDijkstraSource(e.target.value)}
-                      variant="outlined"
-                    >
-                      {nodes.map(node => (
-                        <MenuItem key={node.id} value={node.id}>{node.id}</MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                </Grid>
-                <Grid item xs={6}>
-                  <FormControl fullWidth>
-                    <InputLabel id="dijkstra_target">Target</InputLabel>
-                    <Select
-                      labelId="dijkstra_target"
-                      id="dijkstra_target_select"
-                      value={dijkstraTarget}
-                      label="Target"
-                      onChange={e => setDijkstraTarget(e.target.value)}
-                      variant="outlined"
-                    >
-                      {nodes.map(node => (
-                        <MenuItem key={node.id} value={node.id}>{node.id}</MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                </Grid>
-              </Grid>
+          <Grid item>
+            <Accordion>
+              <AccordionSummary
+                expandIcon={<ExpandMoreIcon />}
+                aria-controls="panel1a-content"
+                id="panel1a-header"
+              >
+                <Typography>Lab 1. Dijkstra</Typography>
+              </AccordionSummary>
+              <AccordionDetails>
+                <Grid container direction={"column"} spacing={2} style={{padding: 10}}>
+                  <Grid item aria-orientation={"horizontal"}>
+                    <Grid container spacing={1}>
+                      <Grid item xs={6}>
+                        <FormControl fullWidth>
+                          <InputLabel id="dijkstra_source">Source</InputLabel>
+                          <Select
+                            labelId="dijkstra_source"
+                            id="dijkstra_source_select"
+                            value={dijkstraSource}
+                            label="Target"
+                            onChange={e => setDijkstraSource(e.target.value)}
+                            variant="outlined"
+                          >
+                            {nodes.map(node => (
+                              <MenuItem key={node.id} value={node.id}>{node.id}</MenuItem>
+                            ))}
+                          </Select>
+                        </FormControl>
+                      </Grid>
+                      <Grid item xs={6}>
+                        <FormControl fullWidth>
+                          <InputLabel id="dijkstra_target">Target</InputLabel>
+                          <Select
+                            labelId="dijkstra_target"
+                            id="dijkstra_target_select"
+                            value={dijkstraTarget}
+                            label="Target"
+                            onChange={e => setDijkstraTarget(e.target.value)}
+                            variant="outlined"
+                          >
+                            {nodes.map(node => (
+                              <MenuItem key={node.id} value={node.id}>{node.id}</MenuItem>
+                            ))}
+                          </Select>
+                        </FormControl>
+                      </Grid>
+                    </Grid>
 
-            </Grid>
-            <Grid item>
-              <Button variant="contained" onClick={sendDijkstra}>Dijkstra!</Button>
-            </Grid>
-            <Grid item>
-              <Grid container>
-                <Grid item xs={6}>
-                  <TextField value={dijkstraResult} variant={"outlined"} disabled={true}/>
-                </Grid>
-                <Grid item xs={6}>
-                  <TextField value={dijkstraPath} variant={"outlined"} disabled={true}/>
-                </Grid>
-              </Grid>
+                  </Grid>
+                  <Grid item>
+                    <Button variant="contained" onClick={sendDijkstra}>Dijkstra!</Button>
+                  </Grid>
+                  <Grid item>
+                    <Grid container>
+                      <Grid item xs={6}>
+                        <TextField value={dijkstraResult} variant={"outlined"} disabled={true}/>
+                      </Grid>
+                      <Grid item xs={6}>
+                        <TextField value={dijkstraPath} variant={"outlined"} disabled={true}/>
+                      </Grid>
+                    </Grid>
 
-            </Grid>
-            <Grid item>
-              <Grid container spacing={2}>
-                <Grid item>
-                  <Button
-                    variant="contained"
-                    component="label"
-                  >
-                    Upload File
-                    <input
-                      type="file"
-                      hidden
-                      onChange={e => uploadGraph((e.target.files[0]))}
-                    />
-                  </Button>
-                </Grid>
-                <Grid item>
-                  <Button variant="contained" onClick={() => copyTextToClipboard(graphToJson())}>Copy graph to clipboard</Button>
-                </Grid>
-              </Grid>
+                  </Grid>
+                  <Grid item>
+                  <Grid container spacing={2}>
+                    <Grid item>
+                      <Button
+                        variant="contained"
+                        component="label"
+                      >
+                        Upload File
+                        <input
+                          type="file"
+                          hidden
+                          onChange={e => uploadGraph((e.target.files[0]))}
+                        />
+                      </Button>
+                    </Grid>
+                    <Grid item>
+                      <Button variant="contained" onClick={() => copyTextToClipboard(graphToJson())}>Copy graph to clipboard</Button>
+                    </Grid>
+                  </Grid>
 
 
-            </Grid>
+                </Grid>
+                </Grid>
+              </AccordionDetails>
+            </Accordion>
+            <Accordion>
+              <AccordionSummary
+                expandIcon={<ExpandMoreIcon />}
+                aria-controls="panel2a-content"
+                id="panel2a-header"
+              >
+                <Typography>Lab 2. Dijkstra and Floyd</Typography>
+              </AccordionSummary>
+              <AccordionDetails>
+                <Grid container direction={"column"} spacing={2} style={{padding: 10}}>
+                </Grid>
+              </AccordionDetails>
+            </Accordion>
           </Grid>
           <Grid item>
             <TableContainer component={Paper}>
