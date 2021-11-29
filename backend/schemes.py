@@ -3,13 +3,23 @@ from typing import List
 from pydantic import BaseModel
 
 
-class Edge(BaseModel):
+class InputEdge(BaseModel):
     source: str
     target: str
     value: int
 
 
-class Edges(BaseModel):
+class DijkstraRequest(BaseModel):
     source_vertex: str
     target_vertex: str
-    edges: List[Edge]
+    edges: List[InputEdge]
+
+
+class GraphEdges(BaseModel):
+    edges: List[InputEdge]
+
+
+class Edge(BaseModel):
+    source: int
+    target: int
+    value: int

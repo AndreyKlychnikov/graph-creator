@@ -38,8 +38,10 @@ export default function Graph() {
   const [dijkstraTarget, setDijkstraTarget] = useState("");
   const [dijkstraSource, setDijkstraSource] = useState("");
   const [dijkstraResult, setDijkstraResult] = useState("");
+  const [dijkstraError, setDijkstraError] = useState("");
   const [dijkstraPath, setDijkstraPath] = useState("");
   const [curEdge, setCurEdge] = useState(null)
+  const [paths, setPaths] = useState([])
   const inputEdgeRef = React.useRef();
 
   const myRef = useRef("someval?");
@@ -58,6 +60,7 @@ export default function Graph() {
     }, [curEdge]
   )
   function sendDijkstra() {
+    setDijkstraError("");
     axios.post('http://127.0.0.1:8000/dijkstra', {
       source_vertex: dijkstraSource,
       target_vertex: dijkstraTarget,
@@ -67,11 +70,26 @@ export default function Graph() {
         value: +edge.handleText
       }))
     }).then(function (response) {
+      if (response.data.error) return setDijkstraError(response.data.error)
       setDijkstraResult(response.data.result)
       setDijkstraPath(pathToString(response.data.path))
       highlightPath(response.data.path)
     })
 
+  }
+  function sendFloyd() {
+    axios.post('http://127.0.0.1:8000/floyd', {
+      edges: edges.map(edge => ({
+        source: edge.source,
+        target: edge.target,
+        value: +edge.handleText
+      }))
+    }).then(function (response) {
+      setPaths(response.data.result.map(el => ({...el, path: [el.source, ...el.path].join(' -> ')})).sort((a, b) => {
+        if (a.source - b.source !== 0) return a.source - b.source;
+        return a.target - b.target;
+      }))
+    })
   }
   function pathToString(path) {
     let nodes = path.map(edge => edge.target)
@@ -266,7 +284,7 @@ export default function Graph() {
             />
           </div>
         </Grid>
-        <Grid item xs={5}>
+        <Grid item xs={5} style={{maxHeight: '100vh', overflow: 'auto'}}>
           <Grid item>
             <Accordion>
               <AccordionSummary
@@ -329,30 +347,10 @@ export default function Graph() {
                         <TextField value={dijkstraPath} variant={"outlined"} disabled={true}/>
                       </Grid>
                     </Grid>
-
                   </Grid>
                   <Grid item>
-                  <Grid container spacing={2}>
-                    <Grid item>
-                      <Button
-                        variant="contained"
-                        component="label"
-                      >
-                        Upload File
-                        <input
-                          type="file"
-                          hidden
-                          onChange={e => uploadGraph((e.target.files[0]))}
-                        />
-                      </Button>
-                    </Grid>
-                    <Grid item>
-                      <Button variant="contained" onClick={() => copyTextToClipboard(graphToJson())}>Copy graph to clipboard</Button>
-                    </Grid>
+                    {dijkstraError}
                   </Grid>
-
-
-                </Grid>
                 </Grid>
               </AccordionDetails>
             </Accordion>
@@ -366,10 +364,64 @@ export default function Graph() {
               </AccordionSummary>
               <AccordionDetails>
                 <Grid container direction={"column"} spacing={2} style={{padding: 10}}>
+                  <Grid item>
+                    <Button variant="contained" onClick={sendFloyd}>Calculate!</Button>
+                  </Grid>
+                  <Grid item>
+                    <TableContainer component={Paper}>
+                      <Table aria-label="custom pagination table" size="small">
+                        <TableHead>
+                          <TableRow>
+                            <TableCell>Source</TableCell>
+                            <TableCell>Target</TableCell>
+                            <TableCell>Length</TableCell>
+                            <TableCell>Path</TableCell>
+                          </TableRow>
+                        </TableHead>
+                        <TableBody>
+                          {(paths).map((path) => (
+                            <TableRow key={`${path.source}_${path.target}`}>
+                              <TableCell>
+                                <Typography>{path.source}</Typography>
+                              </TableCell>
+                              <TableCell>
+                                <Typography>{path.target}</Typography>
+                              </TableCell>
+                              <TableCell>
+                                <Typography>{path.path_length}</Typography>
+                              </TableCell>
+                              <TableCell>
+                                <Typography>{path.path}</Typography>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </TableContainer>
+                  </Grid>
                 </Grid>
               </AccordionDetails>
             </Accordion>
           </Grid>
+          <Grid container spacing={2} style={{padding: 10}}>
+            <Grid item>
+              <Button
+                variant="contained"
+                component="label"
+              >
+                Upload graph File
+                <input
+                  type="file"
+                  hidden
+                  onChange={e => uploadGraph((e.target.files[0]))}
+                />
+              </Button>
+            </Grid>
+            <Grid item>
+              <Button variant="contained" onClick={() => copyTextToClipboard(graphToJson())}>Copy graph to clipboard</Button>
+            </Grid>
+          </Grid>
+          {/*table*/}
           <Grid item>
             <TableContainer component={Paper}>
               <Table aria-label="custom pagination table" size="small">
