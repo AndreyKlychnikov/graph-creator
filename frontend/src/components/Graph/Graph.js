@@ -40,8 +40,11 @@ export default function Graph() {
   const [dijkstraResult, setDijkstraResult] = useState("");
   const [dijkstraError, setDijkstraError] = useState("");
   const [dijkstraPath, setDijkstraPath] = useState("");
+  const [dijkstraTime, setDijkstraTime] = useState("");
+  const [floydTime, setFloydTime] = useState("");
   const [curEdge, setCurEdge] = useState(null)
   const [paths, setPaths] = useState([])
+  const [dijkstraPaths, setDijkstraPaths] = useState([])
   const inputEdgeRef = React.useRef();
 
   const myRef = useRef("someval?");
@@ -78,18 +81,33 @@ export default function Graph() {
 
   }
   function sendFloyd() {
-    axios.post('http://127.0.0.1:8000/floyd', {
-      edges: edges.map(edge => ({
-        source: edge.source,
-        target: edge.target,
-        value: +edge.handleText
+    const edges_ = edges.map(edge => ({
+      source: edge.source,
+      target: edge.target,
+      value: +edge.handleText
+    }))
+    axios.post('http://127.0.0.1:8000/dijkstra-all', {
+      edges: edges_
+    }).then(function (response) {
+      setDijkstraPaths(response.data.result.map(el => ({...el, path: el.path.join(' -> ')})).sort((a, b) => {
+        if (a.source - b.source !== 0) return a.source - b.source;
+        return a.target - b.target;
       }))
+    })
+    axios.post('http://127.0.0.1:8000/floyd', {
+      edges: edges_
     }).then(function (response) {
       setPaths(response.data.result.map(el => ({...el, path: [el.source, ...el.path].join(' -> ')})).sort((a, b) => {
         if (a.source - b.source !== 0) return a.source - b.source;
         return a.target - b.target;
       }))
     })
+    axios.post('http://127.0.0.1:8000/algorithm-comparison', {
+      edges: edges_
+    }).then(function (response) {
+      setDijkstraTime(response.data.dijkstra)
+      setFloydTime(response.data.floyd)
+    });
   }
   function pathToString(path) {
     let nodes = path.map(edge => edge.target)
@@ -364,40 +382,78 @@ export default function Graph() {
               </AccordionSummary>
               <AccordionDetails>
                 <Grid container direction={"column"} spacing={2} style={{padding: 10}}>
-                  <Grid item>
+                  <Grid item aria-orientation={"horizontal"}>
                     <Button variant="contained" onClick={sendFloyd}>Calculate!</Button>
+                    {dijkstraTime && <Typography>Dijkstra: {dijkstraTime.toFixed(3)} ms</Typography>}
+                    {floydTime && <Typography>Floyd: {floydTime.toFixed(3)} ms</Typography>}
                   </Grid>
-                  <Grid item>
-                    <TableContainer component={Paper}>
-                      <Table aria-label="custom pagination table" size="small">
-                        <TableHead>
-                          <TableRow>
-                            <TableCell>Source</TableCell>
-                            <TableCell>Target</TableCell>
-                            <TableCell>Length</TableCell>
-                            <TableCell>Path</TableCell>
-                          </TableRow>
-                        </TableHead>
-                        <TableBody>
-                          {(paths).map((path) => (
-                            <TableRow key={`${path.source}_${path.target}`}>
-                              <TableCell>
-                                <Typography>{path.source}</Typography>
-                              </TableCell>
-                              <TableCell>
-                                <Typography>{path.target}</Typography>
-                              </TableCell>
-                              <TableCell>
-                                <Typography>{path.path_length}</Typography>
-                              </TableCell>
-                              <TableCell>
-                                <Typography>{path.path}</Typography>
-                              </TableCell>
+                  <Grid container direction={"row"} spacing={2} style={{padding: 10}}>
+                    <Grid item xs={6}>
+                      <Typography>Floyd</Typography>
+                      <TableContainer component={Paper}>
+                        <Table aria-label="custom pagination table" size="small">
+                          <TableHead>
+                            <TableRow>
+                              <TableCell>Source</TableCell>
+                              <TableCell>Target</TableCell>
+                              <TableCell>Length</TableCell>
+                              <TableCell>Path</TableCell>
                             </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
-                    </TableContainer>
+                          </TableHead>
+                          <TableBody>
+                            {(paths).map((path) => (
+                              <TableRow key={`${path.source}_${path.target}`}>
+                                <TableCell>
+                                  <Typography>{path.source}</Typography>
+                                </TableCell>
+                                <TableCell>
+                                  <Typography>{path.target}</Typography>
+                                </TableCell>
+                                <TableCell>
+                                  <Typography>{path.path_length}</Typography>
+                                </TableCell>
+                                <TableCell>
+                                  <Typography>{path.path}</Typography>
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </TableContainer>
+                    </Grid>
+                    <Grid item xs={6}>
+                      <Typography>Dijkstra</Typography>
+                      <TableContainer component={Paper}>
+                        <Table aria-label="custom pagination table" size="small">
+                          <TableHead>
+                            <TableRow>
+                              <TableCell>Source</TableCell>
+                              <TableCell>Target</TableCell>
+                              <TableCell>Length</TableCell>
+                              <TableCell>Path</TableCell>
+                            </TableRow>
+                          </TableHead>
+                          <TableBody>
+                            {(dijkstraPaths).map((path) => (
+                              <TableRow key={`${path.source}_${path.target}`}>
+                                <TableCell>
+                                  <Typography>{path.source}</Typography>
+                                </TableCell>
+                                <TableCell>
+                                  <Typography>{path.target}</Typography>
+                                </TableCell>
+                                <TableCell>
+                                  <Typography>{path.path_length}</Typography>
+                                </TableCell>
+                                <TableCell>
+                                  <Typography>{path.path}</Typography>
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </TableContainer>
+                    </Grid>
                   </Grid>
                 </Grid>
               </AccordionDetails>

@@ -1,5 +1,6 @@
 import json
 import math
+import time
 from typing import List
 
 from fastapi import FastAPI, UploadFile, File
@@ -76,6 +77,63 @@ async def floyd(edges: GraphEdges):
                     'path': [indexer.vertex_ids_map_rev[node] for node in get_path(prev, i, j)]
                 })
     return {'result': paths}
+
+
+@app.post("/algorithm-comparison/")
+async def floyd(edges: GraphEdges):
+    indexer = GraphIndexer(edges.edges)
+
+    # floyd
+    start_time = time.time()
+    weights = get_weights_matrix_from_edges(indexer.edges, len(indexer.vertices))
+    floyd_min_path(weights)
+    floyd_time = time.time() - start_time
+
+    # dijkstra
+    start_time = time.time()
+    graph = Graph(len(indexer.vertices))
+    for edge in indexer.edges:
+        graph.add_edge(edge.source, edge.target, edge.value)
+    for i in range(len(indexer.vertices)):
+        graph.dijkstra(i)
+    dijkstra_time = time.time() - start_time
+    return {'floyd': floyd_time * 1000, 'dijkstra': dijkstra_time * 1000}
+
+
+@app.post("/dijkstra-all/")
+async def dijkstra_all(edges: GraphEdges):
+    indexer = GraphIndexer(edges.edges)
+
+
+    dists = []
+    paths = []
+
+    for i in range(len(indexer.vertices)):
+        graph = Graph(len(indexer.vertices))
+
+        for edge in indexer.edges:
+            graph.add_edge(edge.source, edge.target, edge.value)
+        dists_, paths_ = graph.dijkstra(i)
+        tmp_dist = [-1] * len(indexer.vertices)
+        for k, v in dists_.items():
+            tmp_dist[k] = v
+        dists.append(tmp_dist)
+        paths.append(paths_)
+
+    out_path = []
+    for i in range(len(dists)):
+        for j in range(len(dists)):
+            if i == j or dists[i][j] == math.inf:
+                continue
+            paths[i][j].append(j)
+            out_path.append({
+                "source": indexer.vertex_ids_map_rev[i],
+                "target": indexer.vertex_ids_map_rev[j],
+                "path_length": dists[i][j],
+                "path": [indexer.vertex_ids_map_rev[v] for v in paths[i][j]]
+            })
+
+    return {'result': out_path}
 
 
 class GraphIndexer:
