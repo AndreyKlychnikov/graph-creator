@@ -2,3 +2,15 @@
     width: 80px;
     color: black;
 }
+
+.edge-label-text
+{
+    fill: black !important;
+    stroke: black !important;
+    display: none;
+}
+
+.visible
+{
+    display: block !important;
+}

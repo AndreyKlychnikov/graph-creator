@@ -62,6 +62,31 @@ export default function Graph() {
       if (curEdge) inputEdgeRef.current.focus();
     }, [curEdge]
   )
+  function test() {
+    draw_pkg(edges[0], 0.7)
+    hide_pkg(edges[0])
+  }
+  function draw_pkg(edge, position) {
+    const edgeContainer = document.getElementById(`edge-${edge.source}-${edge.target}-container`);
+    const label =  edgeContainer.getElementsByClassName('edge-label-text')[0]
+    label.innerHTML = '📜'
+    label.classList.add('visible')
+
+    const source = nodes.find(node => node.id === edge.source)
+    const target = nodes.find(node => node.id === edge.target)
+
+    const x_dist = target.x - source.x
+    const y_dist = target.y - source.y
+
+    const transformText = label.getAttribute('transform')
+    console.log(transformText)
+    label.setAttribute('transform', `translate(${source.x + x_dist * position}, ${source.y + y_dist * position})`)
+  }
+  function hide_pkg(edge) {
+    const edgeContainer = document.getElementById(`edge-${edge.source}-${edge.target}-container`);
+    const label =  edgeContainer.getElementsByClassName('edge-label-text')[0]
+    label.classList.remove('visible')
+  }
   function sendDijkstra() {
     setDijkstraError("");
     axios.post('http://127.0.0.1:8000/dijkstra', {
@@ -141,6 +166,8 @@ export default function Graph() {
       target: tgt.id,
       type: EMPTY_EDGE_TYPE,
       handleText: "0",
+      label_from: '📜',
+      label_to: ' '
     };
     setEdges((prev) => [...prev, newEdge]);
     let edges = new Map();
@@ -454,6 +481,22 @@ export default function Graph() {
                         </Table>
                       </TableContainer>
                     </Grid>
+                  </Grid>
+                </Grid>
+              </AccordionDetails>
+            </Accordion>
+            <Accordion>
+              <AccordionSummary
+                expandIcon={<ExpandMoreIcon />}
+                aria-controls="panel1a-content"
+                id="panel1a-header"
+              >
+                <Typography>Lab 3.</Typography>
+              </AccordionSummary>
+              <AccordionDetails>
+                <Grid container direction={"column"} spacing={2} style={{padding: 10}}>
+                  <Grid item>
+                    <Button variant="contained" onClick={test}>animate!</Button>
                   </Grid>
                 </Grid>
               </AccordionDetails>
